@@ -2,4 +2,4 @@
 
 CS359 SJTU Computer Architecture
 
-Project1 includes 15 bit puzzles from CSAPP
+Project1 includes 15 bit puzzles problems from CSAPP
