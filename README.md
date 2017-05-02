@@ -4,4 +4,4 @@ CS359 SJTU Computer Architecture
 
 Project1 includes 15 bit puzzles problems from CSAPP
 
-Project2 includes the design and implementation of a pipelined Y86 processor, optimizing both it and a benchmark program to maximize performance.(Group member: Mingyu Liang, Botong Ou, Tao Zhu)
+Project2 includes the design and implementation of a pipelined Y86 processor, optimizing both it and a benchmark program to maximize performance.(Group members: Mingyu Liang, Botong Ou, Tao Zhu)
