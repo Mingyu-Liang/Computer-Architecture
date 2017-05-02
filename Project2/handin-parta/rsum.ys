@@ -1,0 +1,59 @@
+# Leader name and ID here.
+# LiangMingyu 515010910101
+
+# Execution begins at address 0
+	.pos	0
+init: 	
+	irmovl 	Stack, %esp		# Set up stack pointer
+	irmovl	Stack, %ebp		# Set up base pointer
+	call	Main			# Execute main program
+	halt					# Terminate program
+
+# Sample linked list
+	.align 	4
+ele1:	
+	.long 	0x00a
+    .long 	ele2
+ele2:	
+	.long 	0x0b0
+	.long 	ele3
+ele3:	
+	.long	0xc00
+	.long 	0
+
+Main:	
+	pushl	%ebp			#save a copy of initial ebp
+	rrmovl	%esp , %ebp		#set ebp to the beginning of Main's stack frame
+	irmovl	ele1 , %esi
+	pushl 	%esi			#push the first pointer(ele1), which is obtained by 8(%ebp)
+	xorl 	%eax , %eax		#eax=0
+	call	rsum_list
+	rrmovl 	%ebp , %esp
+	popl 	%ebp			#clear the stack frame of Main, set esp and ebp to the initial value(0x100)
+	ret
+
+rsum_list:
+	pushl	%ebp			#save a copy of Main's ebp	
+	rrmovl	%esp , %ebp		#set ebp to the beginning of rsum_list's stack frame
+	pushl	%ebx			#save former recursion's value
+	irmovl	$4 , %esi
+	subl	%esi , %esp		#allocate a vacant space to save pointer field in the future
+	mrmovl	8(%ebp),%edx	#edx=saved pointer field in former recursion,
+							#which is the address of current node
+	andl	%edx , %edx		#if edx==0, recursion terminates
+	je	End
+	mrmovl (%edx) , %ebx	#ebx=value
+	addl	%esi , %edx
+	mrmovl (%edx) , %edi	#edi=pointer to next node
+	rmmovl	%edi , (%esp)	#the vacant stack top saves the pointer to next node
+	call	rsum_list
+	addl	%ebx , %eax
+
+End:	
+	addl	%esi , %esp		#resume the esp and ebp of caller
+	popl	%ebx
+	popl 	%ebp
+	ret
+
+	.pos 0x100
+Stack:

@@ -1,0 +1,62 @@
+# Leader name and ID here.
+# LiangMingyu 515010910101
+
+.pos 	0
+init:	
+	irmovl	Stack,	%esp	# Set up stack pointer
+	irmovl 	Stack,	%ebp	# Set up base pointer
+	call	Main			# Execute main program
+	halt					# Terminate program
+
+.align 4
+# Source block
+src:
+       	 .long 0x00a
+      	 .long 0x0b0
+      	 .long 0xc00
+# Destination block
+dest:
+     	 .long 0x111
+    	 .long 0x222
+    	 .long 0x333
+
+Main:	
+	pushl	%ebp			#save a copy of initial ebp
+	rrmovl 	%esp , %ebp		#set ebp to the beginning of Main's stack frame
+	irmovl	$8 , %esi
+	subl	%esi , %esp		#allocate 2 blank space in stack frame
+	irmovl	src , %eax
+	rmmovl	%eax , (%esp)	#push the address of src
+	irmovl	dest , %eax
+	rmmovl  %eax , 4(%esp)	#push the address of dest
+	call	copy_block
+	irmovl	$8 , %esi
+	addl	%esi , %esp 
+	popl	%ebp
+	ret	
+
+copy_block:
+	pushl	%ebp			#save a copy of Main's ebp
+	rrmovl	%esp, %ebp		#set ebp to the beginning of copy_block's stack frame
+	xorl	%eax , %eax		#eax=0, used to store the result
+	mrmovl	8(%ebp), %esi	#esi=src
+	mrmovl	12(%ebp), %edx	#edx=dest
+	irmovl	$3, %ecx		#ecx=3, used to count the iteration
+
+Loop:	
+	mrmovl	(%esi) , %ebx
+	rmmovl  %ebx , (%edx)	#copy data in (%esi) to (%edx)
+	xorl 	%ebx , %eax
+	irmovl	$4 ,  %edi
+	addl	%edi , %edx		#edx+=4
+	addl	%edi , %esi		#esi+=4
+	irmovl	$1,%edi
+	subl	%edi , %ecx		#ecx-=1
+	jne	Loop
+	
+	popl	%ebp			#resume the esp and ebp of Main
+	ret
+
+.pos	0x100
+Stack:
+

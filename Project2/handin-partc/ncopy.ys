@@ -1,0 +1,99 @@
+# Leader name and ID here.
+# LiangMingyu 515010910101
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len ints to dst.
+# Return the number of positive ints (>0) contained in src.
+#
+# Describe how and why you modified the baseline code.
+# First we use iaddl to replace the corresponding insturctionsto increase #efficiency, but the result isn't satisfying. Then we find that there exists a #load hazard when we remove the data from src to dest, so we decide to improve #our method in this respect.
+# We insert one mrmovl instruction between the two instructions, get value for #the next loop unrolling and save time by avoiding hazard.
+##################################################################
+# Do not modify this portion
+# Function prologue.
+	ncopy:	pushl %ebp	# Save old frame pointer
+	rrmovl %esp,%ebp	# Set up new frame pointer
+	pushl %esi	# Save callee-save regs
+	pushl %ebx
+	pushl %edi
+	mrmovl 8(%ebp),%ebx		# start of the src
+	mrmovl 12(%ebp),%ecx	# start of the dst
+	mrmovl 16(%ebp),%edx	# store the original length
+
+##################################################################
+# You can modify this portion
+# Loop Header            
+	xorl 	%eax , %eax         # eax=0
+	iaddl 	$-4 , %edx	      # four opeartions in one loop
+ 	andl	%edx ,  %edx	      # judge if there is another element
+	jl 	Origin
+Loop:	
+	mrmovl (%ebx) , %esi      # fetch the first element
+	mrmovl 4(%ebx),%edi       # fetch the second element to avoid load hazard
+	rmmovl %esi , (%ecx)      # copy the first element
+	andl 	%esi ,%esi         # judge whether positive or not
+	jle	LNpos1
+	iaddl	$1 , %eax           # update the number if positive
+LNpos1: 
+	rmmovl %edi , 4(%ecx)     # copy the second element
+	andl 	%edi , %edi        # judge whether positive or not
+	jle  	LNpos2
+	iaddl	$1, %eax            # update the number if positive
+LNpos2:
+	mrmovl 8(%ebx) , %esi      # fetch the third element
+	mrmovl 12(%ebx),%edi       # fetch the fourth element
+	rmmovl %esi ,8 (%ecx)      # copy the third element
+	andl 	%esi ,%esi          # judge whether positive or not
+	jle	LNpos3
+	iaddl	$1 , %eax            # update the number if positive
+LNpos3: 
+	rmmovl %edi , 12(%ecx)     # copy the fourth element
+	andl 	%edi , %edi          
+	jle 	NextLoop
+	iaddl	$1, %eax
+NextLoop:
+	iaddl	$16,%ebx             # move to the next four elements
+	iaddl	$16,%ecx
+	iaddl	$-4,%edx             # length minus four
+	jge	Loop            
+
+# if the length is less than four, we reserve the original operations
+Origin:	 
+	iaddl 	$4 , %edx	   # restore the true len
+	iaddl	$-1, %edx
+	jl	Done
+	mrmovl (%ebx) , %esi
+	mrmovl 4(%ebx),%edi
+	rmmovl %esi , (%ecx)
+	andl 	%esi ,%esi
+	jle	rNpos
+	iaddl	$1 , %eax
+rNpos:	
+	iaddl 	$-1, %edx
+	jl 	Done
+	rmmovl	%edi , 4(%ecx)
+	andl 	%edi , %edi
+	jle 	rNpos1
+	iaddl	$1, %eax
+rNpos1:
+	iaddl 	$-1 , %edx	
+	jl	Done
+	mrmovl 8(%ebx) , %esi
+	rmmovl %esi , 8(%ecx)
+	andl 	%esi ,%esi
+	jle	Done
+	iaddl	$1 , %eax
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+popl %edi               # Restore callee-save registers
+popl %ebx
+popl %esi
+rrmovl %ebp, %esp
+popl %ebp
+ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
